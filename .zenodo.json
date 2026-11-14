@@ -1,7 +1,7 @@
 {
-  "title": "similFranz Monitor: vecchi iPad mini riusati come monitor multiparametrico e defibrillatore per la simulazione sanitaria",
+  "title": "similFranz Monitor: un simulatore di monitor multiparametrico e defibrillatore a basso costo, basato sul riuso di tablet dismessi, per la simulazione sanitaria",
   "upload_type": "software",
-  "description": "<p><strong>similFranz Monitor</strong> trasforma un vecchio iPad mini di 1ª generazione in un monitor multiparametrico da simulazione con defibrillatore: ECG, SpO₂, pressione invasiva e non invasiva, capnografia, temperatura, refill capillare, allarmi, defibrillazione manuale e sincronizzata, pacing con soglia di cattura e DAE con voce guida. Tre layout originali (ICU, extraH, DAE).</p><p>L'istruttore conduce lo scenario da tre regie: <em>similFranz Controller</em> su un secondo iPad mini e <em>similFranz Pocket</em> su un iPod touch di 5ª generazione, collegati direttamente al monitor senza rete, oppure la regia web dal computer. Scenari a fasi, registro automatico delle azioni e piano di debriefing con i tempi delle azioni critiche. Dopo ogni scarica è l'istruttore a decidere l'esito. Aggiornamenti senza cavi e compilazione automatica su GitHub; guscio stampabile in 3D e guide passo passo.</p><p>Pensato per formatori, istruttori e facilitatori di simulazione. Riusa dispositivi dismessi, riducendo costi e rifiuti elettronici.</p><p><em>English:</em> similFranz Monitor turns an old first-generation iPad mini into a simulated multiparameter patient monitor and defibrillator (manual, synchronised, pacing, AED) for healthcare simulation. The instructor runs the scenario from a second iPad, an iPod touch (direct link, no network needed) or a computer browser, with phased scenarios, automatic action log and debriefing plan. Includes the iOS 9 apps, web control, 3D-printable case and step-by-step guides.</p><p><strong>Solo per la simulazione sanitaria: non è un dispositivo medico e non va mai usato su pazienti. / For healthcare simulation only: not a medical device, never to be used on patients.</strong></p><p>Licenze: codice e documentazione GNU GPL v3; modelli 3D (cartella stampa3d/) CC BY-NC 4.0.</p>",
+  "description": "<p><strong>Contesto.</strong> Nella formazione basata sulla simulazione il monitor multiparametrico e il defibrillatore sono fonti primarie di segnali clinici: la loro <em>fedeltà funzionale</em>, cioè la coerenza fra azioni dei partecipanti e risposta del dispositivo, sostiene il ragionamento clinico e il coinvolgimento nello scenario. I simulatori di monitor commerciali hanno costi che ne limitano la diffusione, in particolare nella simulazione <em>in situ</em> e nei contesti con poche risorse.</p><p><strong>Descrizione.</strong> similFranz Monitor è uno strumento open source che trasforma un iPad mini di 1ª generazione, dispositivo dismesso e ampiamente disponibile, in un monitor-defibrillatore simulato: ECG con ritmi di base e di arresto, SpO₂ con pletismografia, pressione non invasiva e invasiva, capnografia, frequenza respiratoria, temperatura, refill capillare, allarmi; defibrillazione manuale e sincronizzata, pacing transcutaneo con soglia di cattura elettrica e meccanica, modalità DAE con istruzioni vocali. I valori compaiono solo quando il sensore corrispondente è applicato, come nella pratica clinica.</p><p><strong>Conduzione dello scenario.</strong> Il simulatore è guidato dall'operatore (<em>instructor-driven</em>): il facilitatore fornisce i <em>cue</em> da un secondo iPad, da un iPod touch o dal browser di un computer, con transizioni temporizzate dei parametri e scenari strutturati in fasi allineate agli obiettivi di apprendimento. Dopo ogni scarica, anche sincronizzata, l'esito sul ritmo è deciso dal facilitatore, in alternativa a regole predefinite. Il collegamento diretto fra dispositivi non richiede infrastruttura di rete.</p><p><strong>Supporto al debriefing.</strong> Un registro con marcatura temporale raccoglie automaticamente le azioni eseguite sul dispositivo (sensori applicati, misurazioni, cariche, scariche con energia) e le osservazioni annotate dal facilitatore; il piano di debriefing riporta gli intervalli delle azioni critiche (per esempio dall'insorgenza dell'arresto al suo riconoscimento, all'inizio delle compressioni e alla prima scarica) come base oggettiva per la riflessione del gruppo. Il ciclo d'uso previsto è prebriefing, scenario, debriefing.</p><p><strong>Contenuto dell'archivio.</strong> Codice sorgente delle tre app per iOS 9, regia web, procedure di installazione e aggiornamento, modelli 3D del guscio trasportabile, guide per formatori, istruttori e facilitatori di simulazione. I layout sono originali e non riproducono dispositivi in commercio.</p><p><strong>Limiti.</strong> Lo strumento non è stato ancora oggetto di studi di validazione o di valutazione dell'efficacia formativa; il modello fisiologico è semplificato e orientato alla plausibilità clinica dei segnali, non alla simulazione quantitativa.</p><p><em>English.</em> similFranz Monitor is an open-source, low-cost simulated multiparameter patient monitor and defibrillator built by repurposing first-generation iPad mini tablets. It is instructor-driven: the facilitator delivers cues from a second iPad, an iPod touch or a computer browser, with timed parameter transitions, phased scenarios aligned with learning objectives and instructor-decided shock outcomes. Sensor-dependent signal display supports functional fidelity. A time-stamped event log and a debriefing plan with critical-action intervals support structured debriefing. Device-to-device connection requires no network, enabling in situ simulation. No validation study has been conducted yet.</p><p><strong>Solo per la simulazione sanitaria: non è un dispositivo medico e non va mai usato su pazienti. / For healthcare simulation only: not a medical device, never to be used on patients.</strong></p><p>Licenze: codice e documentazione GNU GPL v3; modelli 3D (cartella stampa3d/) CC BY-NC 4.0.</p>",
   "creators": [
     {
       "name": "Palmisano, Francesco",
@@ -11,17 +11,21 @@
   "keywords": [
     "healthcare simulation",
     "simulation-based education",
-    "patient monitor",
+    "in situ simulation",
+    "functional fidelity",
+    "instructor-driven simulation",
+    "debriefing",
+    "scenario design",
     "simulated patient monitor",
-    "defibrillator",
-    "nursing education",
+    "defibrillation training",
+    "resuscitation training",
     "low-cost simulation",
+    "frugal innovation",
     "device reuse",
-    "iPad",
-    "iPod touch",
+    "e-waste reduction",
+    "open source",
     "3D printing",
-    "open hardware",
-    "simulazione in medicina"
+    "simulazione sanitaria"
   ],
   "language": "ita",
   "notes": "Non è un dispositivo medico. Il jailbreak si esegue sul proprio dispositivo, a proprio rischio; il progetto non distribuisce file di Apple. iPad, iPad mini e iPod touch sono marchi di Apple Inc. I layout sono originali e non riproducono dispositivi in commercio. Not a medical device; not affiliated with Apple or any monitor manufacturer. Sviluppo assistito da Claude Code (Anthropic), assistente di programmazione basato sull'IA, sotto la guida e la verifica dell'autore. / Developed with the help of Claude Code (Anthropic), an AI coding assistant, under the author's direction and review."
