@@ -29,7 +29,7 @@ static inline double gauss(double x, double mu, double sigma) {
     NSInteger _motion;                 // movimenti del paziente: 0 no, 1 lievi, 2 marcati
     BOOL _touch;                       // operatore che tocca il paziente
     NSTimeInterval _cprStart;                 // 0.1..1: ampiezza pletismografica in funzione della PA
-    BOOL _ecgOn, _spo2On, _etco2On, _artOn, _padsOn;
+    BOOL _ecgOn, _spo2On, _etco2On, _artOn, _padsOn, _artOccl, _spo2Occl;
     // pacing transcutaneo e shock
     BOOL _paceActive, _paceCapture, _paceMech;
     double _paceRate, _paceOut;
@@ -83,7 +83,7 @@ static inline double gauss(double x, double mu, double sigma) {
     _pulse = s.pulsePresent;
     _signalValid = s.spo2SignalValid;
     _ecgOn = s.ecgConnected; _spo2On = s.spo2Connected;
-    _etco2On = s.etco2Connected; _artOn = s.artConnected;
+    _etco2On = s.etco2Connected; _artOn = s.artConnected; _artOccl = s.artCuffOccluded; _spo2Occl = s.spo2CuffOccluded;
     _padsOn = s.padsConnected;
     SLDefibInfo *d = s.defib;
     _paceActive = d.paceActive; _paceCapture = d.paceCapture; _paceMech = d.paceMechanical;
@@ -401,6 +401,7 @@ static double plethPulse(double tau) {
     return [self plethCleanAt:t];
 }
 - (double)plethCleanAt:(NSTimeInterval)t {
+    if (_spo2Occl) return 0.02 + 0.01 * sin(2 * M_PI * 0.2 * t);   // bracciale chiuso a monte: il dito non è perfuso, linea piatta
     if (!_signalValid) {
         return 0.35 + 0.25 * sin(2 * M_PI * 1.3 * t) * sin(2 * M_PI * 0.37 * t) + 0.15 * ([self rand01] - 0.5);
     }
@@ -436,6 +437,7 @@ static double artPulse(double tau) {
 - (double)artAt:(NSTimeInterval)t {
     [self scheduleUntil:t];
     if (!_artOn) return 0;                     // trasduttore staccato: 0 mmHg
+    if (_artOccl) return 25 + 0.4 * sin(2 * M_PI * 0.2 * t);   // bracciale chiuso a monte: pressione intrappolata, niente polso
     if (!_pulse) {
         if (_cpr) return 18 + 52 * cprPulse([self cprPhaseAt:t]);     // RCP: ~70/18 mmHg generati dalle compressioni
         // arresto: pressione di riempimento ~20 mmHg; in FV piccole oscillazioni da artefatto

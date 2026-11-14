@@ -1,6 +1,6 @@
 Package: it.simulafranz.pocket
 Name: similFranz Pocket
-Version: 0.3.0
+Version: 0.3.1
 Architecture: iphoneos-arm
 Description: Controller tascabile per iPod touch di similFranz Monitor (simulazione sanitaria, NON per uso clinico): sonde, parametri e tempo di transizione con la rotella. Collegamento diretto, con o senza rete.
 Maintainer: similFranz

@@ -35,6 +35,7 @@
         }
         // --- SpO2 ---
         if (!s.spo2Connected) [tech addObject:@"SpO2 SONDA SCOLLEGATA"];
+        else if (s.spo2CuffOccluded) [tech addObject:@"SpO2: NIBP STESSO BRACCIO"];
         else if (!s.spo2SignalValid) [tech addObject:@"SpO2 SEGNALE SCARSO"];
         else if (s.lowPerfusion) [tech addObject:@"SpO2 BASSA PERFUSIONE"];
         if (!s.spo2Connected || !s.spo2SignalValid) {}
@@ -59,7 +60,8 @@
         }
         // --- Pressione: ART in continuo, NIBP all'ultima misura ---
         NSInteger plo = [s limit:@"sys_low"], phi = [s limit:@"sys_high"];
-        if (s.artConnected && [s alarmOn:@"art"]) {
+        if (s.artCuffOccluded) [tech addObject:@"ART SMORZATA: NIBP STESSO BRACCIO"];
+        else if (s.artConnected && [s alarmOn:@"art"]) {
             NSInteger sys = s.artDisplayedSystolic;
             if (sys < plo) { { BOOL crit = sys < plo - 20; [(crit ? high : med) addObject:[NSString stringWithFormat:@"ART SIST < %ld", (long)plo]]; MARK(@"art", crit ? SLAlarmHigh : SLAlarmMedium); } }
             else if (sys > phi) { [med addObject:[NSString stringWithFormat:@"ART SIST > %ld", (long)phi]]; MARK(@"art", SLAlarmMedium); }

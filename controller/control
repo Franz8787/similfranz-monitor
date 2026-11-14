@@ -1,6 +1,6 @@
 Package: it.simulafranz.controller
 Name: similFranz Controller
-Version: 0.3.0
+Version: 0.3.1
 Architecture: iphoneos-arm
 Description: Controller per iPad di similFranz Monitor (simulazione sanitaria, NON per uso clinico). Collegamento diretto fra iPad, con o senza rete Wi-Fi.
 Maintainer: similFranz

@@ -66,8 +66,11 @@ Puoi tenerle collegate tutte e tre: per esempio il Pocket in mano durante lo sce
 - **In alto** i valori veri del paziente e, sotto, che cosa vede chi è al monitor. Tocca una tessera per regolarla.
 - **Applica le modifiche**: *Subito*, oppure scegli un tempo (10 s, 30 s, 1 min, 2 min), prepara più modifiche
   e falle partire insieme. I ritmi di arresto partono sempre subito.
-- **Sonde**: le applichi tu quando vedi che vengono posizionate. Il lato conta: il bracciale sullo stesso braccio
-  della sonda SpO₂ le toglie il segnale durante la misura.
+- **Sonde**: le applichi tu quando vedi che vengono posizionate. Il lato conta, come al letto del paziente: durante
+  ogni misura NIBP il bracciale chiude il braccio, quindi una sonda SpO₂ sul dito dello stesso lato perde la curva e il
+  valore, e una linea arteriosa radiale dello stesso lato mostra una curva piatta e smorzata, finché il bracciale non si
+  sgonfia. Il lato si sceglie in ogni regia: «dx/sx» su Controller e Pocket, la figura del paziente nella regia web.
+  Se non lo scegli valgono SpO₂ a sinistra, bracciale a destra, arteria radiale a sinistra.
 - **Refill capillare**: sul monitor è sempre visibile. Il partecipante lo valuta toccando il riquadro; se invece lo chiede a voce, lo fai misurare tu con «Fai valutare» (pannello Esame): dopo tre secondi compare il tempo.
 - **RCP e ventilazioni**: tocca «RCP in corso» quando iniziano le compressioni. Con l'RCP in corso (o in apnea) il paziente non respira da solo: tocca «Ventila» a ogni insufflazione dei partecipanti (con il 30:2, due tocchi). Solo allora compaiono l'onda del capnogramma e l'EtCO₂, e la FR a monitor è quella delle insufflazioni dell'ultimo minuto. Dopo 30 secondi senza ventilazioni l'EtCO₂ sparisce.
 - **Batteria**: in alto a destra sul controller vedi la carica dell'iPad della regia.

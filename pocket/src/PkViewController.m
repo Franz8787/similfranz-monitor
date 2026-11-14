@@ -68,7 +68,7 @@ static const CGFloat W = 320, kTabH = 48;
     UIScrollView *_chips; NSMutableArray<CtlButton *> *_chipBtns; NSString *_chipsFor;
     UIView *_dock; NSMutableArray<CtlButton *> *_timeBtns; CtlButton *_apply, *_cancel;
     NSMutableDictionary<NSString *, CtlButton *> *_rhythmBtns, *_sensorBtns, *_actBtns;
-    NSMutableDictionary<NSString *, UILabel *> *_sensorState, *_actSub;
+    NSMutableDictionary<NSString *, UILabel *> *_sensorState, *_actSub; NSMutableDictionary<NSString *, CtlButton *> *_sideBtns;
     // modifiche
     NSInteger _modeSec;
     NSMutableDictionary<NSString *, NSNumber *> *_pending, *_live;      // in coda / mentre si gira
@@ -76,7 +76,7 @@ static const CGFloat W = 320, kTabH = 48;
     NSString *_pendingRhythm;
     // varie
     PkPairingView *_pair; UILabel *_toast; NSString *_lastMsg; CFTimeInterval _clockArmed; CtlButton *_take; BOOL _wasMine, _wasIdle;
-    UIView *_outcome; NSString *_outcomeSig;
+    UIView *_outcome; NSString *_outcomeSig; BOOL _occlSaid;
 }
 
 - (instancetype)initWithModel:(CtlModel *)model {
@@ -190,20 +190,28 @@ static const CGFloat W = 320, kTabH = 48;
 }
 
 - (void)buildSensors:(UIView *)pg {
-    _sensorBtns = [NSMutableDictionary dictionary]; _sensorState = [NSMutableDictionary dictionary];
+    _sensorBtns = [NSMutableDictionary dictionary]; _sensorState = [NSMutableDictionary dictionary]; _sideBtns = [NSMutableDictionary dictionary];
     __weak PkViewController *me = self;
-    UILabel *h = CtlLabel(CGRectMake(10, 0, W - 20, 18), @"SONDE · un tocco collega o stacca", 11, YES, CTL_INK3); [pg addSubview:h];
+    UILabel *h = CtlLabel(CGRectMake(10, 0, W - 20, 18), @"SONDE · un tocco collega o stacca · dx/sx sposta", 11, YES, CTL_INK3); [pg addSubview:h];
     NSArray *ss = Sensors(); CGFloat rh = MIN(46, (pg.bounds.size.height - 26) / ss.count - 4);
     for (NSUInteger i = 0; i < ss.count; i++) {
         NSString *k = ss[i][0];
         CtlButton *b = [CtlButton buttonWithTitle:@"" style:CtlButtonQuiet color:nil frame:CGRectMake(8, 22 + i * (rh + 4), W - 16, rh) target:nil action:NULL];
         b.backgroundColor = CTL_CARD; b.layer.cornerRadius = 10; b.accessibilityIdentifier = [@"sensor." stringByAppendingString:k];
         UIView *bar = [[UIView alloc] initWithFrame:CGRectMake(0, 8, 4, rh - 16)]; bar.backgroundColor = ss[i][2]; bar.userInteractionEnabled = NO; [b addSubview:bar];
-        UILabel *n = CtlLabel(CGRectMake(14, 0, 170, rh), ss[i][1], 15, YES, CTL_INK); n.userInteractionEnabled = NO; [b addSubview:n];
+        BOOL sided = [@[@"spo2", @"nibp", @"art"] containsObject:k];   // il lato conta: bracciale e sonde sullo stesso braccio
+        UILabel *n = CtlLabel(CGRectMake(14, 0, sided ? 128 : 170, rh), ss[i][1], 15, YES, CTL_INK); n.userInteractionEnabled = NO;
+        n.adjustsFontSizeToFitWidth = YES; n.minimumScaleFactor = 0.85; [b addSubview:n];
         UILabel *st = CtlLabel(CGRectMake(W - 16 - 112, (rh - 26) / 2, 104, 26), @"", 11, YES, CTL_INK3);
         st.textAlignment = NSTextAlignmentCenter; st.layer.cornerRadius = 13; st.layer.masksToBounds = YES; st.userInteractionEnabled = NO; [b addSubview:st];
         b.onTap = ^{ PkClick(); [me sensorTapped:k]; };
         _sensorBtns[k] = b; _sensorState[k] = st; [pg addSubview:b];
+        if (sided) {
+            CtlButton *sb = [CtlButton buttonWithTitle:@"dx" style:CtlButtonQuiet color:nil frame:CGRectMake(8 + 144, 22 + i * (rh + 4) + (rh - 30) / 2, 42, 30) target:nil action:NULL];
+            sb.titleLabel.font = [UIFont boldSystemFontOfSize:13]; sb.accessibilityIdentifier = [@"side." stringByAppendingString:k]; sb.hidden = YES;
+            sb.onTap = ^{ PkClick(); [me sideTapped:k]; };
+            _sideBtns[k] = sb; [pg addSubview:sb];
+        }
     }
 }
 
@@ -411,6 +419,23 @@ static const CGFloat W = 320, kTabH = 48;
 - (void)sensorTapped:(NSString *)k {
     __weak PkViewController *me = self;
     [_m command:@"set_sensor" value:@{@"sensor": k, @"connected": @((BOOL)![self sensorOn:k])} done:^(BOOL ok, NSString *e) { if (!ok) [me flash:e]; }];
+}
+// sposta il sensore sull'altro lato: si stacca e si rimette (il monitor riparte da capo, come nella realtà)
+- (void)sideTapped:(NSString *)k {
+    NSString *cur = [self siteOf:k];
+    NSString *nw = [cur rangeOfString:@"_r"].location != NSNotFound ? [cur stringByReplacingOccurrencesOfString:@"_r" withString:@"_l"]
+                                                                      : [cur stringByReplacingOccurrencesOfString:@"_l" withString:@"_r"];
+    CtlModel *m = _m; __weak PkViewController *me = self;
+    [m command:@"set_sensor" value:@{@"sensor": k, @"connected": @NO} done:^(BOOL ok, NSString *e) {
+        if (!ok) { [me flash:e]; return; }
+        [m command:@"set_sensor" value:@{@"sensor": k, @"connected": @YES, @"site": nw} done:^(BOOL ok2, NSString *e2) { if (!ok2) [me flash:e2]; }];
+    }];
+    [self flash:[NSString stringWithFormat:@"%@ spostata a %@", @{@"spo2": @"Sonda SpO₂", @"nibp": @"Bracciale", @"art": @"Linea arteriosa"}[k],
+                 [nw rangeOfString:@"_r"].location != NSNotFound ? @"destra" : @"sinistra"]];
+}
+- (NSString *)siteOf:(NSString *)k {
+    NSDictionary *sites = [self.st[@"sensor_sites"] isKindOfClass:[NSDictionary class]] ? self.st[@"sensor_sites"] : @{};
+    return sites[k] ?: @{@"spo2": @"finger_l2", @"nibp": @"upper_arm_r", @"art": @"radial_l"}[k];
 }
 - (void)actionTapped:(NSString *)k {
     NSDictionary *s = self.st; __weak PkViewController *me = self;
@@ -633,7 +658,17 @@ static const CGFloat W = 320, kTabH = 48;
         NSString *t = on ? @"COLLEGATA" : @"STACCATA";
         if (![l.text isEqualToString:t]) l.text = t;
         l.textColor = on ? CTL_BG : CTL_INK3; l.backgroundColor = on ? CTL_GREEN : CTL_CARD2;
+        CtlButton *sb = _sideBtns[sk];
+        if (sb) {
+            sb.hidden = !on;
+            NSString *side = [[self siteOf:sk] rangeOfString:@"_r"].location != NSNotFound ? @"dx" : @"sx";
+            if (![[sb titleForState:UIControlStateNormal] isEqualToString:side]) [sb setTitle:side forState:UIControlStateNormal];
+        }
     }
+    // bracciale in misura sullo stesso braccio: lo dice anche il Pocket
+    if ([st[@"spo2_cuff_occluded"] boolValue] && !_occlSaid) { _occlSaid = YES; [self flash:@"Bracciale sullo stesso braccio della SpO₂: segnale perso durante la misura"]; }
+    else if ([st[@"art_cuff_occluded"] boolValue] && !_occlSaid) { _occlSaid = YES; [self flash:@"Bracciale sullo stesso braccio dell'arteria: curva smorzata durante la misura"]; }
+    else if (![st[@"spo2_cuff_occluded"] boolValue] && ![st[@"art_cuff_occluded"] boolValue]) _occlSaid = NO;
     // azioni
     BOOL cpr = [st[@"cpr_active"] boolValue], vm = [st[@"ventilation_manual"] boolValue], muted = [st[@"alarms_muted"] boolValue];
     [_actBtns[@"cpr"] setStyle:cpr ? CtlButtonFilled : CtlButtonTinted color:CTL_RED];

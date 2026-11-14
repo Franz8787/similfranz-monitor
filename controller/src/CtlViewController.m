@@ -111,7 +111,7 @@ NSString *CtlDescribeBlock(NSString *rhythm, NSDictionary *params, NSDictionary 
     NSMutableArray<NSDictionary *> *_custom; NSString *_lastState; NSTimeInterval _endArmed;
     UILabel *_phaseClock; CGRect _openRect; BOOL _pauseInit; UIControl *_clockBtn;
     UILabel *_regLast; CtlButton *_regDeb; NSInteger _quickSession;
-    NSMutableArray *_updaters; NSMutableDictionary<NSString *, NSNumber *> *_setTouched; UIView *_outcome; NSString *_outcomeSig; CtlButton *_moreBtn;
+    NSMutableArray *_updaters; NSMutableDictionary<NSString *, NSNumber *> *_setTouched; UIView *_outcome; NSString *_outcomeSig; BOOL _occlSaid; CtlButton *_moreBtn;
     NSMutableDictionary<NSString *, CtlButton *> *_siteBtn;
     NSMutableDictionary<NSString *, NSNumber *> *_quickCount; NSString *_quickFlash; NSTimeInterval _quickFlashUntil; CtlDebriefView *_debrief;
     // centro
@@ -570,6 +570,10 @@ NSString *CtlDescribeBlock(NSString *rhythm, NSDictionary *params, NSDictionary 
     if (![_edBuilt isEqualToString:_sel]) [self buildEditor];
     for (void (^u)(void) in _updaters) u();
     [self refreshOutcome];
+    // bracciale in misura sullo stesso braccio di SpO2 o arteria: il monitor perde il segnale, la regia lo dice
+    if ([_m.state[@"spo2_cuff_occluded"] boolValue] && !_occlSaid) { _occlSaid = YES; [self flash:@"Bracciale sullo stesso braccio della SpO₂: segnale perso durante la misura"]; }
+    else if ([_m.state[@"art_cuff_occluded"] boolValue] && !_occlSaid) { _occlSaid = YES; [self flash:@"Bracciale sullo stesso braccio dell'arteria: curva smorzata durante la misura"]; }
+    else if (![_m.state[@"spo2_cuff_occluded"] boolValue] && ![_m.state[@"art_cuff_occluded"] boolValue]) _occlSaid = NO;
     NSDictionary *st = _m.state ?: @{};
     NSDictionary *tr = [st[@"transitions"] isKindOfClass:[NSDictionary class]] ? st[@"transitions"] : @{};
     for (NSString *k in _rows) {

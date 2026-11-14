@@ -1092,6 +1092,28 @@ static void testSites(void) {
     CHECK([s snapshot].sensorSites[@"nibp"] == nil, "scollegato: posizione rimossa");
     [s resetScenario];
     CHECK([s snapshot].sensorSites.count == 0, "reset: nessuna posizione");
+    // senza lato indicato (Pocket, stati, scenari) vale quello di serie che mostrano le regie: bracciale a destra
+    Cmd(s, @"set_sensor", @{@"sensor": @"nibp", @"connected": @YES}, NULL);
+    Cmd(s, @"set_sensor", @{@"sensor": @"spo2", @"connected": @YES, @"site": @"finger_r2"}, NULL);
+    CHECK([[s snapshot].sensorSites[@"nibp"] isEqualToString:@"upper_arm_r"] && [[s stateDictionary][@"sensor_sites"][@"nibp"] isEqualToString:@"upper_arm_r"],
+          "bracciale senza lato: braccio destro di serie, anche nel JSON");
+    [s startNibpMeasurementError:NULL];
+    CHECK([s snapshot].spo2CuffOccluded, "bracciale di serie (dx) e SpO2 al dito destro: occlusa durante la misura");
+    // linea arteriosa radiale sullo stesso braccio: curva piatta durante la misura, poi torna
+    Cmd(s, @"set_sensor", @{@"sensor": @"art", @"connected": @YES, @"site": @"radial_r"}, NULL);
+    SLSnapshot *a1 = [s snapshot];
+    CHECK(a1.artCuffOccluded && a1.artDisplayedSystolic == 26 && a1.artDisplayedDiastolic == 24 && [[s stateDictionary][@"art_cuff_occluded"] boolValue],
+          "ART radiale destra con bracciale destro in misura: smorzata (26/24)");
+    Tick(s, 60);
+    SLSnapshot *a2 = [s snapshot];
+    CHECK(!a2.artCuffOccluded && a2.artDisplayedSystolic == a2.systolic, "misura finita: la curva arteriosa torna pulsatile");
+    Cmd(s, @"set_sensor", @{@"sensor": @"art", @"connected": @NO}, NULL);
+    Cmd(s, @"set_sensor", @{@"sensor": @"art", @"connected": @YES}, NULL);
+    [s startNibpMeasurementError:NULL];
+    CHECK([[s snapshot].sensorSites[@"art"] isEqualToString:@"radial_l"] && ![s snapshot].artCuffOccluded, "ART di serie a sinistra, bracciale a destra: nessun effetto");
+    Cmd(s, @"set_sensor", @{@"sensor": @"art", @"connected": @NO}, NULL);
+    Cmd(s, @"set_sensor", @{@"sensor": @"art", @"connected": @YES, @"site": @"femoral_r"}, NULL);
+    CHECK(![s snapshot].artCuffOccluded, "ART femorale: il bracciale non la influenza");
 }
 
 static void testCrtAssess(void) {

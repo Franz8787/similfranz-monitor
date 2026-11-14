@@ -54,13 +54,22 @@ static NSString *SLSiteSide(NSString *site) {
     return nil;
 }
 
+// posizione di serie quando una regia collega il sensore senza dire dove (uguale in tutte le regie)
+static NSString *SLDefaultSite(NSString *sensor) {
+    return @{ @"spo2": @"finger_l2", @"nibp": @"upper_arm_r", @"art": @"radial_l", @"oxi": @"finger_r2" }[sensor];
+}
+// la linea arteriosa è a valle di un bracciale sul braccio dello stesso lato (radiale, ulnare, brachiale)
+static BOOL SLArmArterySite(NSString *site) {
+    return [site isKindOfClass:[NSString class]] && ([site hasPrefix:@"radial"] || [site hasPrefix:@"ulnar"] || [site hasPrefix:@"brachial"]);
+}
+
 #pragma mark - Snapshot
 
 @interface SLSnapshot ()
 @property (nonatomic, readwrite) NSUInteger revision;
 @property (nonatomic, readwrite, copy) NSString *rhythm;
 @property (nonatomic, readwrite) NSInteger heartRate, spo2, respRate, etco2, systolic, diastolic;
-@property (nonatomic, readwrite) BOOL spo2SignalValid, spo2SignalSetting, spo2CuffOccluded;
+@property (nonatomic, readwrite) BOOL spo2SignalValid, spo2SignalSetting, spo2CuffOccluded, artCuffOccluded;
 @property (nonatomic, readwrite, copy) NSDictionary<NSString *, NSString *> *sensorSites;
 @property (nonatomic, readwrite) BOOL ecgConnected, spo2Connected, nibpConnected, etco2Connected, artConnected;
 @property (nonatomic, readwrite) BOOL oxiConnected, oxiCuffOccluded, oxiPower, oxiOnline;
@@ -148,10 +157,12 @@ static NSString *SLSiteSide(NSString *site) {
 }
 - (NSInteger)artDisplayedSystolic {
     if (!self.artConnected) return -1;
+    if (self.artCuffOccluded) return 26;                     // bracciale chiuso a monte: curva piatta, nessuna pulsatilità
     return self.pulsePresent ? self.systolic : 20;           // arresto: pressione di riempimento sistemico
 }
 - (NSInteger)artDisplayedDiastolic {
     if (!self.artConnected) return -1;
+    if (self.artCuffOccluded) return 24;
     return self.pulsePresent ? self.diastolic : 18;
 }
 
@@ -978,12 +989,20 @@ static NSString *SLRhythmName(NSString *r) {
         s.heartRate = _hr; s.spo2 = _spo2; s.respRate = _rr; s.etco2 = _etco2;
         s.systolic = _sys; s.diastolic = _dia;
         s.spo2SignalSetting = _spo2Valid;
-        s.sensorSites = [_sites copy];
+        // posizioni effettive: quelle indicate dalle regie, altrimenti quelle di serie per i sensori collegati
+        NSMutableDictionary *sites = [_sites mutableCopy];
+        NSDictionary *on = @{ SLSensorSpO2: @(_spo2On), SLSensorNIBP: @(_nibpOn), SLSensorART: @(_artOn), SLSensorOxi: @(_oxiOn) };
+        for (NSString *k in on) if ([on[k] boolValue] && !sites[k] && SLDefaultSite(k)) sites[k] = SLDefaultSite(k);
+        s.sensorSites = sites;
         // bracciale in misura sullo stesso braccio della sonda: il dito non è perfuso, niente pletismo
-        NSString *cuffSide = SLSiteSide(_sites[SLSensorNIBP]), *spo2Side = SLSiteSide(_sites[SLSensorSpO2]);
+        NSString *cuffSide = SLSiteSide(sites[SLSensorNIBP]), *spo2Side = SLSiteSide(sites[SLSensorSpO2]);
         s.spo2CuffOccluded = _spo2On && _nibpOn && _nibpStatus == SLNibpMeasuring && cuffSide && spo2Side &&
-                             [_sites[SLSensorNIBP] hasPrefix:@"upper_arm"] && [_sites[SLSensorSpO2] hasPrefix:@"finger"] && [cuffSide isEqualToString:spo2Side];
+                             [sites[SLSensorNIBP] hasPrefix:@"upper_arm"] && [sites[SLSensorSpO2] hasPrefix:@"finger"] && [cuffSide isEqualToString:spo2Side];
         s.spo2SignalValid = _spo2Valid && !s.spo2CuffOccluded;
+        // linea arteriosa sullo stesso braccio del bracciale in misura: a valle del bracciale chiuso la curva perde la pulsatilità
+        NSString *artSide = SLSiteSide(sites[SLSensorART]);
+        s.artCuffOccluded = _artOn && _nibpOn && _nibpStatus == SLNibpMeasuring && cuffSide && artSide &&
+                            [sites[SLSensorNIBP] hasPrefix:@"upper_arm"] && SLArmArterySite(sites[SLSensorART]) && [cuffSide isEqualToString:artSide];
         s.ecgConnected = _ecgOn; s.spo2Connected = _spo2On; s.nibpConnected = _nibpOn;
         s.etco2Connected = _etco2On; s.artConnected = _artOn;
         s.tempConnected = _tempOn; s.padsConnected = _padsOn;
@@ -991,9 +1010,9 @@ static NSString *SLRhythmName(NSString *r) {
         s.oxiSensorSince = _oxiOn ? MAX(0, self.clock() - _oxiConnAt) : -1;
         s.oxiOnline = _oxiSeenAt > 0 && self.clock() - _oxiSeenAt < 6;
         s.oxiMutedRemaining = (NSInteger)ceil(MAX(0, _oxiMutedUntil - self.clock()));
-        NSString *oxiSide = SLSiteSide(_sites[SLSensorOxi]);
+        NSString *oxiSide = SLSiteSide(sites[SLSensorOxi]);
         s.oxiCuffOccluded = _oxiOn && _nibpOn && _nibpStatus == SLNibpMeasuring && cuffSide && oxiSide &&
-                            [_sites[SLSensorNIBP] hasPrefix:@"upper_arm"] && [_sites[SLSensorOxi] hasPrefix:@"finger"] && [cuffSide isEqualToString:oxiSide];
+                            [sites[SLSensorNIBP] hasPrefix:@"upper_arm"] && [sites[SLSensorOxi] hasPrefix:@"finger"] && [cuffSide isEqualToString:oxiSide];
         s.spo2DelaySec = _spo2Delay; s.spo2LowPerfusionFlag = _spo2LowPerf;
         s.operatorTouch = _touchUntil > self.clock();
         s.patientMotion = _motion; s.patientMotionRemaining = (_motion && _motionUntil > 0) ? (NSInteger)ceil(MAX(0, _motionUntil - self.clock())) : 0;
@@ -1216,6 +1235,7 @@ static BOOL SLBoolValue(id v, BOOL *out, NSString *name, NSString **err) {
             if (![self setSensor:value[@"sensor"] connected:b error:error]) return NO;
             if (!b) [_sites removeObjectForKey:value[@"sensor"]];
             else if ([site isKindOfClass:[NSString class]]) _sites[value[@"sensor"]] = site;
+            // senza lato esplicito vale quello di serie (SLDefaultSite, applicato nello snapshot): uguale in monitor e regie
         } else if ([name isEqualToString:@"set_probe_connected"]) {          // compatibilità v0.1 (SpO2)
             BOOL b; if (!SLBoolValue(value, &b, @"probe_connected", error)) return NO;
             [self spo2Connect:b];
@@ -1482,7 +1502,7 @@ static NSString *SLNibpStatusName(SLNibpStatus s) {
         @"pulse_present": @(s.pulsePresent),
         @"spo2_percent": @(s.spo2),
         @"spo2_signal_valid": @(s.spo2SignalSetting),
-        @"spo2_cuff_occluded": @(s.spo2CuffOccluded),
+        @"spo2_cuff_occluded": @(s.spo2CuffOccluded), @"art_cuff_occluded": @(s.artCuffOccluded),
         @"sensor_sites": s.sensorSites ?: @{},
         @"probe_connected": @(s.spo2Connected),
         @"spo2_displayed": s.spo2Displayable ? @(s.spo2) : null,

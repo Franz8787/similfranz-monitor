@@ -110,7 +110,7 @@ typedef NS_ENUM(NSInteger, SLNibpPhase) {
 // posizione dei sensori sul paziente (es. nibp -> "upper_arm_r", spo2 -> "finger_l2"); solo per i controller
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, NSString *> *sensorSites;
 @property (nonatomic, readonly) BOOL spo2SignalSetting;     // impostazione dell'istruttore (spo2SignalValid include l'occlusione)
-@property (nonatomic, readonly) BOOL spo2CuffOccluded;      // bracciale NIBP in misura sullo stesso braccio della sonda SpO2
+@property (nonatomic, readonly) BOOL spo2CuffOccluded, artCuffOccluded;   // artCuffOccluded: linea arteriosa a valle del bracciale in misura      // bracciale NIBP in misura sullo stesso braccio della sonda SpO2
 // SpO2: acquisizione dopo il collegamento della sonda (ritardo impostabile) e bassa perfusione forzata
 @property (nonatomic, readonly) NSInteger spo2DelaySec;
 @property (nonatomic, readonly) BOOL spo2Searching;       // prima metà del ritardo: niente onda, "ricerca"

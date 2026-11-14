@@ -1587,6 +1587,9 @@
     var sameArm = on('spo2') && on('nibp') && sideOf(siteOf('spo2')) && sideOf(siteOf('spo2')) === sideOf(siteOf('nibp')) && /^finger/.test(siteOf('spo2'));
     $('spo2Note').textContent = s.spo2_cuff_occluded ? 'Bracciale in misura sullo stesso braccio: SpO₂ persa finché non si sgonfia.'
       : sameArm ? 'Sonda e bracciale sullo stesso braccio: durante ogni misura NIBP la SpO₂ si perde.' : '';
+    var artSame = on('art') && on('nibp') && /^(radial|ulnar|brachial)/.test(siteOf('art')) && sideOf(siteOf('art')) && sideOf(siteOf('art')) === sideOf(siteOf('nibp'));
+    $('artNote').textContent = s.art_cuff_occluded ? 'Bracciale in misura sullo stesso braccio della linea arteriosa: curva smorzata finché non si sgonfia.'
+      : artSame ? 'Linea arteriosa e bracciale sullo stesso braccio: durante ogni misura NIBP la curva arteriosa si smorza.' : '';
     // monitor
     // elenco dei layout dal monitor (id + nome): qui non è scritto nessun nome
     var lays = s.layouts || [], laySig = lays.map(function (l) { return l.id + '=' + l.name; }).join('|');
