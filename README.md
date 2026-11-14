@@ -1,5 +1,7 @@
 # similFranz Monitor
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24232019.svg)](https://doi.org/10.5281/zenodo.24232019)
+
 **Quel vecchio iPad mini® ha ancora molte vite da salvare. Per finta, e proprio per questo sul serio.**
 
 Immagina la tua prossima simulazione: i partecipanti entrano, applicano gli elettrodi, e sul monitor compare
@@ -221,7 +223,11 @@ I passi sono in [Per sviluppatori › Fai la tua versione](docs/sviluppo.md#fai-
 
 Se lo usi in un corso, un poster o un articolo, trovi la citazione pronta con il pulsante
 **Cite this repository** qui su GitHub (file [`CITATION.cff`](CITATION.cff)). Ogni versione è archiviata
-su [Zenodo](https://zenodo.org), l'archivio scientifico del CERN, con un DOI permanente.
+su [Zenodo](https://zenodo.org), l'archivio scientifico del CERN, con un DOI permanente:
+[doi.org/10.5281/zenodo.24232019](https://doi.org/10.5281/zenodo.24232019) (punta sempre all'ultima versione).
+
+> Palmisano, F. (2026). *similFranz Monitor: un simulatore di monitor multiparametrico e defibrillatore a basso costo,
+> basato sul riuso di tablet dismessi, per la simulazione sanitaria*. Zenodo. https://doi.org/10.5281/zenodo.24232019
 
 ## Licenza
 
