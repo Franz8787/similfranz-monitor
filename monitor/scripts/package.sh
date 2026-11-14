@@ -15,6 +15,10 @@ fields = dict(l.split(": ", 1) for l in control.splitlines() if ": " in l)
 # dimensione installata (KB) per Cydia
 size = sum(os.path.getsize(os.path.join(d, f)) for d, _, fs in os.walk(app) for f in fs) // 1024 + 1
 control += f"Installed-Size: {size}\n"
+# edizione (pubblica/privata) scritta da build.sh nell'app: il monitor la confronta prima di installarsi
+import plistlib
+edition = plistlib.load(open(os.path.join(app, "Info.plist"), "rb")).get("SFEdition", "pubblica")
+control += f"X-SimilFranz-Edizione: {edition}\n"
 now = int(time.time())
 
 def tar_gz(add):

@@ -1117,8 +1117,11 @@ static NSData *TGzip(NSData *d) {
     z.next_in = (Bytef *)d.bytes; z.avail_in = (uInt)d.length; z.next_out = o.mutableBytes; z.avail_out = (uInt)o.length;
     deflate(&z, Z_FINISH); o.length = z.total_out; deflateEnd(&z); return o;
 }
-static NSData *TDeb(NSString *pkg, NSString *ver, NSUInteger padding) {
-    NSData *c = [[NSString stringWithFormat:@"Package: %@\nVersion: %@\nArchitecture: iphoneos-arm\n", pkg, ver] dataUsingEncoding:NSUTF8StringEncoding];
+static NSData *TDebEd(NSString *pkg, NSString *ver, NSUInteger padding, NSString *edition);
+static NSData *TDeb(NSString *pkg, NSString *ver, NSUInteger padding) { return TDebEd(pkg, ver, padding, nil); }
+static NSData *TDebEd(NSString *pkg, NSString *ver, NSUInteger padding, NSString *edition) {
+    NSData *c = [[NSString stringWithFormat:@"Package: %@\nVersion: %@\nArchitecture: iphoneos-arm\n%@", pkg, ver,
+                  edition ? [NSString stringWithFormat:@"X-SimilFranz-Edizione: %@\n", edition] : @""] dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableData *tar = [NSMutableData dataWithLength:512];
     char *h = tar.mutableBytes; strcpy(h, "./control"); strcpy(h + 100, "0000644"); snprintf(h + 124, 12, "%011lo", (unsigned long)c.length); h[156] = '0';
     [tar appendData:c]; tar.length = 512 + (c.length + 511) / 512 * 512 + 1024;
@@ -1172,6 +1175,21 @@ static void testUpdates(void) {
     CHECK([api handle:cq].status == 400, "aggiornamenti: il pacchetto del monitor non si distribuisce a pezzi");
     cq.query = @"pkg=it.simulafranz.controller&offset=0";
     CHECK([api handle:cq].status == 404, "aggiornamenti: pacchetto non conservato -> 404");
+    // edizione privata (layout aggiuntivi): il pacchetto pubblico del monitor è rifiutato, quello privato e i controller passano
+    api.edition = @"privata"; installed = nil;
+    r = [api handle:Req(@"GET", @"/api/v1/update", @"482913", nil)];
+    CHECK([J(r)[@"edition"] isEqualToString:@"privata"], "aggiornamenti: il monitor dichiara l'edizione privata");
+    up.body = TDebEd(@"it.simulafranz.monitor", @"0.15.0", 10, @"pubblica");
+    CHECK([api handle:up].status == 409 && !installed, "edizione privata: pacchetto PUBBLICO del monitor rifiutato (i layout restano)");
+    up.body = TDeb(@"it.simulafranz.monitor", @"0.15.0", 10);
+    CHECK([api handle:up].status == 409 && !installed, "edizione privata: pacchetto del monitor senza edizione rifiutato");
+    up.body = TDebEd(@"it.simulafranz.monitor", @"0.15.0", 10, @"privata");
+    CHECK([api handle:up].status == 202 && installed, "edizione privata: pacchetto privato del monitor installato");
+    up.body = TDebEd(@"it.simulafranz.controller", @"0.4.0", 10, @"pubblica");
+    CHECK([api handle:up].status == 200, "edizione privata: il controller pubblico si conserva come sempre");
+    api.edition = @"pubblica"; installed = nil;
+    up.body = TDebEd(@"it.simulafranz.monitor", @"0.15.1", 10, @"pubblica");
+    CHECK([api handle:up].status == 202 && installed, "edizione pubblica: pacchetto pubblico installato");
 }
 
 int main(void) {

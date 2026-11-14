@@ -37,6 +37,7 @@
 @property (nonatomic, copy) NSString *packagesDir;
 @property (nonatomic, copy) NSString *updateRepo;          // "utente/repository" delle versioni pubbliche ("" = versione privata: niente ricerca)
 @property (nonatomic, copy) NSString *appVersion;
+@property (nonatomic, copy) NSString *edition;             // "pubblica" | "privata" (layout aggiuntivi: accetta solo pacchetti privati del monitor)
 // Test: sostituisce l'installazione vera del monitor (ritorna la versione o nil + errore)
 @property (nonatomic, copy) NSString *(^installHandler)(NSData *deb, NSString **error);
 

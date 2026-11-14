@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "Se usi questo progetto in un corso, un poster o un articolo, citalo così. / If you use this project, please cite it as below."
+type: software
+title: "similFranz Monitor: vecchi iPad mini riusati come monitor multiparametrico e defibrillatore per la simulazione sanitaria"
+abstract: >-
+  Un iPad mini di 1ª generazione diventa un monitor multiparametrico con defibrillatore, pacing e DAE simulati,
+  comandato dall'istruttore da un secondo iPad, da un iPod touch o dal computer, con collegamento diretto senza rete.
+  Scenari a fasi, registro delle azioni e piano di debriefing. App per iOS 9, regia web, guscio stampabile in 3D.
+  Non è un dispositivo medico.
+authors:
+  - given-names: Francesco
+    family-names: Palmisano
+    alias: ilFranz
+    orcid: "https://orcid.org/0009-0009-9368-0212"
+version: 0.14.1
+date-released: 2026-11-14
+license: GPL-3.0-only
+repository-code: "https://github.com/Franz8787/similfranz-monitor"
+url: "https://franz8787.github.io/similfranz-monitor/"
+keywords:
+  - healthcare simulation
+  - simulation-based education
+  - patient monitor
+  - defibrillator
+  - low-cost simulation
+  - device reuse
+  - 3D printing

@@ -1255,14 +1255,19 @@
     api('GET', '/api/v1/update').then(function (me) {
       if (!me.ok) { updText('Il monitor non risponde.'); return; }
       var have = { 'it.simulafranz.monitor': me.version }; Object.keys(me.packages || {}).forEach(function (k) { have[k] = me.packages[k]; });
-      if (!me.repo) { updText('Versione privata del monitor (' + me.version + '): si aggiorna solo con un pacchetto scelto a mano.'); return; }
+      if (!me.repo) { updText('Questo monitor (' + me.version + ') non conosce un repository delle versioni: si aggiorna con un pacchetto scelto a mano.'); return; }
       var owner = me.repo.split('/')[0], name = me.repo.split('/')[1];
       fetchT('https://api.github.com/repos/' + me.repo + '/releases/latest', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rel) {
         if (!rel) { updText('Nessuna versione pubblicata su ' + me.repo + '.'); return; }
-        upd.todo = []; var rows = [];
+        upd.todo = []; var rows = [], priv = me.edition === 'privata', monNew = null;
         (rel.assets || []).forEach(function (a) {
           var m = /^(it\.simulafranz\.[a-z]+)_([0-9.]+)_iphoneos-arm\.deb$/.exec(a.name); if (!m || !UPD_NAMES[m[1]]) return;
           var newer = vcmp(m[2], have[m[1]]) > 0;
+          if (newer && priv && m[1] === 'it.simulafranz.monitor') {     // edizione privata: il pacchetto pubblico toglierebbe i layout aggiuntivi
+            monNew = m[2];
+            rows.push('<li class="new"><span>' + UPD_NAMES[m[1]] + '</span><span>ha ' + have[m[1]] + ' → <b>' + m[2] + '</b> · edizione privata</span></li>');
+            return;
+          }
           if (newer) upd.todo.push({ pkg: m[1], ver: m[2], url: 'https://' + owner.toLowerCase() + '.github.io/' + name + '/aggiornamenti/' + a.name, manual: a.browser_download_url });
           rows.push('<li class="' + (newer ? 'new' : '') + '"><span>' + UPD_NAMES[m[1]] + '</span><span>' + (have[m[1]] ? 'ha ' + have[m[1]] : 'non ancora sul monitor') + (newer ? ' → <b>' + m[2] + '</b>' : ' · aggiornato') + '</span></li>');
         });
@@ -1270,9 +1275,12 @@
         $('updList').innerHTML = rows.join(''); $('updList').hidden = !rows.length;
         $('updGo').hidden = !upd.todo.length || !me.installer;
         $('updGo').textContent = upd.todo.length === 1 ? 'Aggiorna (' + UPD_NAMES[upd.todo[0].pkg] + ')' : 'Aggiorna tutto (' + upd.todo.length + ')';
+        var privNote = monNew ? ' <b>Monitor in edizione privata</b>: la ' + monNew + ' pubblica gli toglierebbe i layout aggiuntivi, quindi non la installo. '
+          + 'Aggiornalo con il pacchetto privato della stessa versione (caricalo qui sotto).' : '';
         updText(upd.todo.length ? 'È disponibile la versione <b>' + rel.tag_name.replace(/^v/, '') + '</b> pubblicata su ' + me.repo + '.'
-          + (me.installer ? '' : ' Questo monitor non sa ancora aggiornarsi da solo: aggiornalo una volta dal computer (aggiorna.sh).')
-          : 'Tutto aggiornato alla versione ' + rel.tag_name.replace(/^v/, '') + '.');
+          + (me.installer ? '' : ' Questo monitor non sa ancora aggiornarsi da solo: aggiornalo una volta dal computer (aggiorna.sh).') + privNote
+          : (monNew ? 'Controller e Pocket aggiornati alla versione ' + rel.tag_name.replace(/^v/, '') + '.' + privNote
+                    : 'Tutto aggiornato alla versione ' + rel.tag_name.replace(/^v/, '') + '.'));
       }).catch(function () { updText('Per cercare aggiornamenti questo computer deve avere internet.'); });
     });
   }

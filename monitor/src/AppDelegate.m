@@ -80,10 +80,11 @@ static NSString *const kPortKey = @"sf_port";
     _api.scenarios = [[SFScenarioStore alloc] initWithPath:[support stringByAppendingPathComponent:@"similFranz/scenari.json"] state:_state];
     // registro della sessione per il debriefing: osserva lo stato una volta al secondo (leggero) e resta salvato su file
     _api.sessionLog = [[SFSessionLog alloc] initWithPath:[support stringByAppendingPathComponent:@"similFranz/registro.json"] state:_state];
-    // aggiornamenti dalla regia web (computer): pacchetti dei controller conservati qui; ricerca su GitHub solo nella versione pubblica
+    // aggiornamenti dalla regia web (computer): pacchetti dei controller conservati qui; versioni cercate su GitHub (SFUpdateRepo)
     _api.packagesDir = [support stringByAppendingPathComponent:@"similFranz/pacchetti"];
     _api.updateRepo = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"SFUpdateRepo"] ?: @"";
     _api.appVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"] ?: @"?";
+    _api.edition = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"SFEdition"] ?: @"pubblica";
     __weak SFSessionLog *slog = _api.sessionLog;
     [NSTimer scheduledTimerWithTimeInterval:1.0 target:[NSBlockOperation blockOperationWithBlock:^{ [slog observe]; }] selector:@selector(main) userInfo:nil repeats:YES];
     __weak APIController *api = _api;

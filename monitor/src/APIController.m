@@ -321,7 +321,7 @@ static NSArray<NSString *> *SFPackages(void) { return @[@"it.simulafranz.monitor
     }
     if ([m isEqualToString:@"GET"]) {
         return [SLHTTPResponse status:200 json:@{@"ok": @YES, @"package": kPkgMonitor, @"version": _appVersion ?: @"?",
-            @"repo": _updateRepo ?: @"", @"installer": @((BOOL)([SFUpdate installerAvailable:@"/usr/libexec/similfranz-monitor-aggiorna"] || _installHandler != nil)),
+            @"repo": _updateRepo ?: @"", @"edition": _edition ?: @"pubblica", @"installer": @((BOOL)([SFUpdate installerAvailable:@"/usr/libexec/similfranz-monitor-aggiorna"] || _installHandler != nil)),
             @"packages": [self storedPackages]}];
     }
     if (![m isEqualToString:@"POST"]) return SLError(405, @"method not allowed");
@@ -330,6 +330,10 @@ static NSArray<NSString *> *SFPackages(void) { return @[@"it.simulafranz.monitor
     if (!f) return SLError(400, err);
     NSString *pkg = f[@"Package"], *ver = f[@"Version"];
     if ([pkg isEqualToString:kPkgMonitor]) {
+        NSString *mine = _edition ?: @"pubblica", *theirs = f[@"X-SimilFranz-Edizione"] ?: @"pubblica";
+        if ([mine isEqualToString:@"privata"] && ![theirs isEqualToString:@"privata"])
+            return SLError(409, @"questo monitor ha l'edizione privata, con layout aggiuntivi: il pacchetto pubblico li toglierebbe. "
+                                 "Aggiorna il monitor con il pacchetto della sua edizione");
         NSString *v = _installHandler ? _installHandler(req.body, &err)
             : [SFUpdate installDeb:req.body package:kPkgMonitor debPath:@"/var/mobile/Library/Caches/similfranz-aggiornamento-monitor.deb"
                             helper:@"/usr/libexec/similfranz-monitor-aggiorna" error:&err];

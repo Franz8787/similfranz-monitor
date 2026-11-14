@@ -217,6 +217,13 @@ I passi sono in [Per sviluppatori › Fai la tua versione](docs/sviluppo.md#fai-
   Gli altri nomi di prodotti e aziende appartengono ai rispettivi titolari. Il progetto è indipendente: non è affiliato, sponsorizzato né approvato da nessuno di questi titolari.
 - La figura del paziente nella pagina web è di Goran tek-en (Wikimedia Commons), licenza CC BY-SA 4.0.
 
+## Come citarlo
+
+Se lo usi in un corso, un poster o un articolo, trovi la citazione pronta con il pulsante
+**Cite this repository** qui su GitHub (file [`CITATION.cff`](CITATION.cff)). Ogni versione è archiviata
+su [Zenodo](https://zenodo.org), l'archivio scientifico del CERN, con un DOI permanente.
+
 ## Licenza
 
-Codice, modelli 3D e documentazione: [GPL-3.0](LICENSE). Sviluppato da Francesco Palmisano (ilFranz) con Claude Code.
+Codice e documentazione: [GPL-3.0](LICENSE). Modelli 3D del guscio (cartella `stampa3d/`): [CC BY-NC 4.0](stampa3d/LICENSE).
+Sviluppato da Francesco Palmisano (ilFranz) con Claude Code.

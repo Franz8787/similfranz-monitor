@@ -48,12 +48,15 @@ plutil -convert binary1 -o "$APP/Info.plist" "$ROOT/assets/Info.plist"
 # la versione dell'app viene SOLO da "control" (la stessa che vede dpkg): così non possono divergere
 APP_VERSION="$(sed -n 's/^Version: //p' "$ROOT/control")"
 plutil -replace CFBundleShortVersionString -string "$APP_VERSION" "$APP/Info.plist"
-# Versione PUBBLICA: la console cerca gli aggiornamenti sul repository da cui si compila (GitHub Actions: GITHUB_REPOSITORY;
-# in locale: il remote "origin"). Versione privata: nessun repository, così non si sovrascrive mai con quella pubblica.
-if [ "${SF_PUBLIC:-1}" = "1" ]; then
-  REPO_SLUG="${GITHUB_REPOSITORY:-$(git -C "$ROOT" remote get-url origin 2>/dev/null | sed -E 's#(\.git)?$##; s#^.*github\.com[:/]##' || true)}"
-  [ -n "$REPO_SLUG" ] && plutil -replace SFUpdateRepo -string "$REPO_SLUG" "$APP/Info.plist" && echo "   aggiornamenti da: $REPO_SLUG"
-fi
+# Repository delle versioni: quello da cui si compila (GitHub Actions: GITHUB_REPOSITORY; in locale: il remote "origin").
+# Edizione: "privata" se l'app contiene layout aggiuntivi che il pacchetto pubblico non ha. Un monitor in edizione privata
+# segue le versioni pubblicate (avviso + controller e Pocket da GitHub) ma rifiuta il pacchetto PUBBLICO del monitor,
+# che gli toglierebbe quei layout: il monitor si aggiorna solo con un pacchetto della sua stessa edizione.
+EDITION=pubblica
+REPO_SLUG="${SF_UPDATE_REPO:-${GITHUB_REPOSITORY:-$(git -C "$ROOT" remote get-url origin 2>/dev/null | sed -E 's#(\.git)?$##; s#^.*github\.com[:/]##' || true)}}"
+[ "$EDITION" = privata ] && [ -z "$REPO_SLUG" ] && REPO_SLUG="Franz8787/similfranz-monitor"
+plutil -replace SFEdition -string "$EDITION" "$APP/Info.plist"
+[ -n "$REPO_SLUG" ] && plutil -replace SFUpdateRepo -string "$REPO_SLUG" "$APP/Info.plist" && echo "   edizione $EDITION, versioni da: $REPO_SLUG"
 printf 'APPL????' > "$APP/PkgInfo"
 cp "$ROOT"/assets/*.png "$APP/"
 cp -R "$ROOT/assets/Settings.bundle" "$APP/"
