@@ -1,0 +1,11 @@
+Package: it.simulafranz.monitor
+Name: similFranz Monitor
+Version: 0.14.0
+Architecture: iphoneos-arm
+Description: Monitor multiparametrico SIMULATO per la simulazione sanitaria (NON per uso clinico). Server HTTP integrato per il controller.
+Maintainer: similFranz
+Author: similFranz
+Section: Utilities
+Depends: firmware (>= 9.0)
+Conflicts: it.simlab.monitor
+Replaces: it.simlab.monitor

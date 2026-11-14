@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- tasto "Impostaz. iPad" del pannello Reti Wi-Fi: apre prefs:root=WIFI -->
+	<key>com.apple.springboard.opensensitiveurl</key>
+	<true/>
+	<!-- Wi-Fi in app: elenco reti e collegamento (MobileWiFi) -->
+	<key>com.apple.wifi.manager-access</key>
+	<true/>
+	<!-- la password della rete va nel portachiavi di sistema del Wi-Fi (gruppo "apple") -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>apple</string>
+		<string>com.apple.preferences</string>
+	</array>
+</dict>
+</plist>

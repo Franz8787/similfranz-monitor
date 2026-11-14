@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>similFranz Monitor</title>
+<meta name="description" content="Due vecchi iPad mini diventano un monitor multiparametrico da simulazione e la sua cabina di regia. Progetto open source per la simulazione sanitaria.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Stessa famiglia del saturimetro: colonna editoriale di 1080px, fasce che alternano carta e "sala"
+   (il nero-blu dello schermo del monitor). Gli accenti sono i colori delle tracce: verde ECG, azzurro SpO2. */
+:root {
+  --bg: #f2f5f6; --surface: #ffffff; --ink: #0f1c23; --muted: #4d5f68; --line: #d5dee2;
+  --room: #0a1217; --room-ink: #e6f0f3; --room-muted: #8fa6b0; --room-line: #1d3039;
+  --ecg: #128a45; --ecg-screen: #3cff6e; --spo2: #0a8fae; --spo2-screen: #50dcff; --co2: #f2e05a; --alarm: #f2a900; --regia: #0a84ff;
+  --font-display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1419; --surface: #0f1d24; --ink: #e3edf0; --muted: #9db1ba; --line: #213740;
+    --room: #050b0e; --ecg: #3fcf88; --spo2: #45cfea; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1419; --surface: #0f1d24; --ink: #e3edf0; --muted: #9db1ba; --line: #213740;
+  --room: #050b0e; --ecg: #3fcf88; --spo2: #45cfea; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.65 var(--font-body); }
+a { color: var(--spo2); text-underline-offset: 3px; }
+a:focus-visible { outline: 3px solid var(--spo2); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.08; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.3rem, 5.6vw, 4rem); font-weight: 700; }
+h2 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+p { margin: 0; max-width: 62ch; }
+img { max-width: 100%; height: auto; display: block; }
+.band { padding-inline: max(16px, env(safe-area-inset-left, 0px)); padding-block: clamp(56px, 9vw, 104px); }
+.band.tight { padding-block-start: 0; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 28px; }
+.eyebrow { font: 700 0.78rem/1 var(--font-data); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ecg); }
+.lead { font-size: clamp(1.1rem, 1.6vw, 1.3rem); color: var(--muted); }
+.room { background: var(--room); color: var(--room-ink); }
+.room .lead, .room p.m, .room figcaption { color: var(--room-muted); }
+.room .eyebrow { color: var(--ecg-screen); }
+.room a { color: var(--spo2-screen); }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(28px, 5vw, 56px); align-items: center; }
+.hero-copy { display: grid; gap: 22px; min-width: 0; }
+.hero h1 em { font-style: normal; color: var(--ecg); }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn { display: inline-flex; align-items: center; padding: 13px 20px; border-radius: 999px; font: 600 1rem/1 var(--font-display); text-decoration: none; border: 2px solid var(--ink); color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--bg); }
+.btn:hover { transform: translateY(-1px); }
+.warn { font-size: 0.95rem; color: var(--muted); border-left: 3px solid var(--alarm); padding-left: 12px; }
+
+/* un iPad mini disegnato attorno allo screenshot: cornice scura, angoli arrotondati */
+.ipad { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.ipad .shell { background: linear-gradient(160deg, #2a3136, #14191c); border-radius: 22px; padding: 4.2% 3.2%; box-shadow: 0 30px 50px -24px rgba(8, 26, 34, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.ipad img { border-radius: 4px; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #000; }
+.ipad figcaption { font-size: 0.92rem; color: var(--muted); text-align: center; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 3vw, 32px); align-items: start; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 2.4vw, 24px); }
+
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 10px; align-content: start; }
+.room .card { background: #0f1b21; border-color: var(--room-line); }
+.card p { color: var(--muted); font-size: 1rem; }
+.room .card p { color: var(--room-muted); }
+.tag { font: 700 0.72rem/1 var(--font-data); letter-spacing: 0.12em; text-transform: uppercase; color: var(--spo2); }
+.room .tag { color: var(--spo2-screen); }
+
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; counter-reset: s; }
+.steps .card { counter-increment: s; }
+.steps .card::before { content: counter(s); font: 700 2.2rem/1 var(--font-data); color: var(--ecg); }
+.timeline { font: 500 0.95rem/1.5 var(--font-data); background: #0f1b21; border: 1px solid var(--room-line); border-radius: 14px; padding: 18px 20px; display: grid; gap: 6px; overflow-x: auto; }
+.timeline div { display: grid; grid-template-columns: 4.2em 9.5em 1fr; gap: 12px; white-space: nowrap; }
+.timeline b { color: var(--room-ink); font-weight: 700; }
+.timeline i { font-style: normal; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 5px; padding: 1px 6px; justify-self: start; align-self: center; }
+.k-act { color: var(--ecg-screen); } .k-el { color: #ff9f1a; } .k-pt { color: var(--room-muted); } .k-dr { color: #cc9eff; } .k-sc { color: var(--spo2-screen); }
+.timeline span { color: var(--room-ink); }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: center; }
+.guide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.guide .card h3 { display: flex; gap: 10px; align-items: baseline; }
+.guide .card h3 span { font: 700 0.8rem/1 var(--font-data); color: var(--ecg); letter-spacing: 0.08em; }
+.guide ol, .guide ul { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 1rem; display: grid; gap: 6px; }
+.guide b { color: var(--ink); }
+.guide .wide { grid-column: 1 / -1; }
+kbd { font: 700 0.85em/1 var(--font-data); background: var(--surface); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 2px 6px; color: var(--ink); white-space: nowrap; }
+footer { padding: 40px max(16px, env(safe-area-inset-left, 0px)); border-top: 1px solid var(--line); color: var(--muted); font-size: 0.95rem; }
+footer .wrap { gap: 10px; }
+@media (max-width: 820px) {
+  .hero, .split, .pair { grid-template-columns: 1fr; }
+  .grid3, .steps, .trio, .guide { grid-template-columns: 1fr; }
+  .timeline div { grid-template-columns: 4.2em 1fr; } .timeline i { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="wrap hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Simulazione sanitaria · fai da te · open source</span>
+      <h1>Quel vecchio iPad mini® ha ancora <em>molte vite da salvare</em>.</h1>
+      <p class="lead">Per finta, e proprio per questo sul serio. Un iPad® diventa il monitor-defibrillatore che i partecipanti usano davvero; un secondo iPad è la regia del facilitatore, che conduce lo scenario e raccoglie i fatti per il debriefing. Si parlano direttamente, anche dove il Wi-Fi® è un ricordo.</p>
+      <div class="ctas">
+        <a class="btn primary" href="https://github.com/Franz8787/similfranz-monitor">Scarica il progetto</a>
+        <a class="btn" href="#guida">Guida rapida</a>
+        <a class="btn" href="#come">Come si costruisce</a>
+      </div>
+      <p class="warn">Solo per la simulazione sanitaria: non è un dispositivo medico, non misura e non eroga nulla.</p>
+    </div>
+    <figure class="ipad">
+      <video src="img/regia_video.mp4" poster="img/regia_video_poster.jpg" autoplay muted loop playsinline style="width: 100%; border-radius: 14px; display: block" aria-label="Il monitor similFranz nel suo guscio e, accanto, la regia del facilitatore: lo scenario passa dalla tachicardia alla fibrillazione ventricolare e alla RCP"></video>
+      <figcaption>Doppia visione: la regia conduce lo scenario, il monitor risponde in tempo reale.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<section class="band room">
+  <div class="wrap">
+    <span class="eyebrow">Il monitor</span>
+    <h2>Si comporta come quello vero, anche quando qualcosa va storto.</h2>
+    <p class="lead">La NIBP si gonfia e misura, gli allarmi suonano con la loro priorità, in arresto la saturazione sparisce e l'EtCO₂ crolla. Il defibrillatore carica, scarica, sincronizza e fa pacing: che cosa succede dopo, lo decide l'istruttore.</p>
+    <div class="trio">
+      <figure class="ipad"><div class="shell"><img src="img/monitor_icu_defib.png" alt="Layout ICU con il cassetto del defibrillatore aperto"></div><figcaption><b>ICU</b> · monitor da terapia intensiva con defibrillatore a scomparsa</figcaption></figure>
+      <figure class="ipad"><div class="shell"><img src="img/monitor_extrah.png" alt="Layout extraH: monitor-defibrillatore da emergenza territoriale"></div><figcaption><b>extraH</b> · monitor-defibrillatore da emergenza territoriale</figcaption></figure>
+      <figure class="ipad"><div class="shell"><img src="img/monitor_dae.png" alt="Layout DAE: defibrillatore semiautomatico con istruzioni a schermo"></div><figcaption><b>DAE</b> · semiautomatico con voce guida</figcaption></figure>
+    </div>
+    <p class="m">I tre layout sono disegnati per questo progetto: non riproducono nessun dispositivo in commercio. Il sistema è aperto, e un frontale diverso per le esigenze formative del tuo centro si può scrivere partendo da uno di questi.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <span class="eyebrow" style="color: var(--regia)">La regia del facilitatore</span>
+    <h2>I valori reali del paziente simulato, sempre sotto gli occhi.</h2>
+    <div class="pair">
+      <figure class="ipad"><div class="shell"><img src="img/controller_regia.png" alt="Il controller: tessere con i valori veri in alto, regolazione al centro, sonde e azioni a destra, scenario a sinistra"></div><figcaption>Sul secondo iPad: tocchi una tessera e la regoli.</figcaption></figure>
+      <div class="wrap" style="gap: 18px">
+        <div class="card"><span class="tag">Subito o con calma</span><h3>Applica subito, oppure in 30 secondi</h3><p>Prepari più modifiche, scegli in quanto tempo devono avvenire e le fai partire insieme. I ritmi di arresto partono sempre subito.</p></div>
+        <div class="card"><span class="tag">Le sonde le applichi tu</span><h3>Il monitor mostra solo ciò che è collegato</h3><p>Sotto ogni valore vero leggi che cosa vede chi è al monitor. E il lato conta: il bracciale sullo stesso braccio della sonda le toglie il segnale.</p></div>
+        <div class="card"><span class="tag">Senza il secondo iPad</span><h3>La regia web, dal computer</h3><p>Computer e monitor sulla stessa rete Wi-Fi: scrivi nel browser l'indirizzo che il monitor ti mostra, poi il PIN. Schermo grande per scenari, registro e aggiornamenti.</p></div>
+        <div class="card"><span class="tag">Più regie, nessun conflitto</span><h3>Comanda una regia alla volta, e tutti sanno quale</h3><p>Aprire una regia non toglie il comando a nessuno. Chi ha dato un comando nell'ultimo minuto è protetto: gli altri toccano «Prendi il comando». Chi è fermo da più di un minuto non blocca nessuno. Chi perde il comando lo vede subito, con «Riprendi», e ogni passaggio resta nel registro.</p></div>
+      </div>
+    </div>
+    <h3 style="margin: 34px 0 6px">La regia in tasca: similFranz Pocket</h3>
+    <p class="lead" style="margin: 0 0 18px">Su un iPod touch® di 5ª generazione, per le simulazioni volanti. Tocchi il parametro e giri la rotella con il pollice: piano un'unità, veloce a salti, un clic a ogni scatto. Sotto, i valori clinici a un tocco e il tempo della transizione.</p>
+    <figure class="ipad" style="max-width: 860px; margin: 0 auto 22px">
+      <video src="img/pocket_video.mp4" poster="img/pocket_video_poster.jpg" autoplay muted loop playsinline style="width: 100%; border-radius: 14px; display: block" aria-label="Dal Pocket la frequenza cardiaca sale a 124 in 10 secondi, la saturazione scende a 86, poi fibrillazione ventricolare: il monitor risponde"></video>
+      <figcaption>Il Pocket in azione (velocità 2×): la FC sale a 124 in 10 s, la SpO₂ scende a 86, poi FV.</figcaption>
+    </figure>
+    <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 26px">
+      <img src="img/pocket_rotella.png" alt="similFranz Pocket: la rotella della frequenza cardiaca, una modifica in coda da avviare in 30 secondi" style="width: min(240px, 44vw); border-radius: 18px; border: 1px solid var(--line)">
+      <img src="img/pocket_sonde.png" alt="similFranz Pocket: le sonde collegate o staccate con un tocco" style="width: min(240px, 44vw); border-radius: 18px; border: 1px solid var(--line)">
+      <img src="img/pocket_comando.png" alt="similFranz Pocket: avviso quando un'altra regia prende il comando, con il pulsante Riprendi" style="width: min(240px, 44vw); border-radius: 18px; border: 1px solid var(--line)">
+    </div>
+    <figure class="ipad" style="max-width: 860px; margin: 8px auto 22px"><img src="img/regia_trio.jpg" alt="Il monitor similFranz con le due regie: l'iPad del controller e l'iPod touch del Pocket" style="border-radius: 14px"><figcaption>Monitor, regia su iPad e regia tascabile: collegati insieme, comanda una regia alla volta.</figcaption></figure>
+    <figure class="ipad" style="max-width: 760px; margin: 8px auto 0"><img src="img/regia_pc.jpg" alt="Un portatile con la regia web di similFranz: valori del paziente, ritmo, stati, registro e figura del paziente per le sonde" style="border-radius: 14px"><figcaption>Dal portatile: la regia web servita dal monitor stesso, con la figura del paziente per posizionare le sonde.</figcaption></figure>
+  </div>
+</section>
+
+<section class="band room">
+  <div class="wrap split">
+    <div class="wrap" style="gap: 18px">
+      <span class="eyebrow">Scenari a fasi</span>
+      <h2>Lo scenario lo conduci tu, non un cronometro.</h2>
+      <p class="lead">Costruisci le fasi prima, anche partendo dai valori del momento. In sala resti in una fase finché non decidi di passare alla successiva, e nel frattempo ritocchi a mano quello che serve.</p>
+      <p class="m">Ogni fase ha il suo ritmo, i parametri che cambiano, il tempo che ci mettono e una nota per te: «avanzare quando hanno dato l'ossigeno».</p>
+    </div>
+    <figure class="ipad"><div class="shell"><img src="img/controller_scenario.png" alt="Il costruttore di scenari: elenco delle fasi a sinistra, ritmo e parametri della fase a destra"></div><figcaption>Il costruttore: una fase, i suoi parametri, la tua nota.</figcaption></figure>
+  </div>
+</section>
+
+<section class="band room tight">
+  <div class="wrap">
+    <span class="eyebrow">Registro e debriefing</span>
+    <h2>Alla fine sai com'è andata, al secondo.</h2>
+    <p class="lead">Quello che fanno i partecipanti viene annotato da solo. Quello che osservi tu lo aggiungi con un tocco. Una sessione per ogni simulazione.</p>
+    <div class="timeline" role="img" aria-label="Esempio di registro: arresto a 00:09, riconosciuto a 00:16, compressioni a 00:22, carica a 00:40, scarica da 150 joule e ROSC a 00:50">
+      <div><b>00:09</b><i class="k-pt">Paziente</i><span>Paziente senza polso: arresto cardiaco</span></div>
+      <div><b>00:16</b><i class="k-act">Azione</i><span>Riconosciuto l'arresto cardiaco</span></div>
+      <div><b>00:22</b><i class="k-act">Azione</i><span>Iniziate le compressioni</span></div>
+      <div><b>00:31</b><i class="k-dr">Farmaco</i><span>Adrenalina 1 mg</span></div>
+      <div><b>00:40</b><i class="k-el">Elettrica</i><span>Carica 150 J — partecipanti</span></div>
+      <div><b>00:50</b><i class="k-el">Elettrica</i><span>Shock 1: 150 J — partecipanti</span></div>
+      <div><b>00:50</b><i class="k-pt">Paziente</i><span>Il paziente ha di nuovo il polso (ROSC)</span></div>
+    </div>
+    <div class="grid3">
+      <div class="card"><span class="tag">Dall'arresto</span><h3>7 s al riconoscimento</h3><p>I tempi delle azioni critiche sono già calcolati: riconoscimento, prime compressioni, prima scarica, ROSC.</p></div>
+      <div class="card"><span class="tag">Da solo</span><h3>Le scariche con la loro energia</h3><p>Carica, scarica, pacing, analisi del DAE, sonde applicate, pressioni misurate: finiscono nel registro senza che tu faccia nulla.</p></div>
+      <div class="card"><span class="tag">Con un tocco</span><h3>Punti di forza, punti da discutere</h3><p>Li segni mentre guardi lo scenario, e al debriefing li ritrovi al minuto giusto.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <span class="eyebrow">Il metodo, prima dello strumento</span>
+    <h2>Segue il ciclo della simulazione: prebriefing, scenario, debriefing.</h2>
+    <div class="grid3">
+      <div class="card"><span class="tag">Prebriefing</span><h3>Chi conosce lo strumento si sente al sicuro</h3><p>Presenti il dispositivo al gruppo: come si accende, dove si collegano le sonde, che cosa può fare. Chi si sente al sicuro impara.</p></div>
+      <div class="card"><span class="tag">Scenario</span><h3>Fedeltà funzionale, i segnali al momento giusto</h3><p>Il monitor risponde alle azioni come nella pratica clinica. Tu dai i segnali clinici quando servono e tieni lo scenario sugli obiettivi di apprendimento.</p></div>
+      <div class="card"><span class="tag">Debriefing</span><h3>Si parte dai fatti</h3><p>«Dall'arresto al riconoscimento sono passati sette secondi: che cosa ve l'ha fatto capire?» I dati aprono la riflessione, il gruppo la costruisce.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band room">
+  <div class="wrap split">
+    <div class="wrap" style="gap: 18px">
+      <span class="eyebrow">Riuso</span>
+      <h2>Ce n'è uno in quasi ogni cassetto.</h2>
+      <p class="lead">In dieci anni Apple® ha venduto oltre 500 milioni di iPad. Il mini è arrivato nel 2012: tre milioni di iPad in tre giorni, due su tre mini secondo gli analisti. Dal 2016 è fermo a iOS 9, e per molti è diventato un soprammobile.</p>
+      <p class="m">Per la simulazione è perfetto: uno schermo da 7,9 pollici, un altoparlante, il Wi-Fi e una batteria che regge una sessione. Ogni iPad che torna in sala è un dispositivo in meno tra i 62 milioni di tonnellate di rifiuti elettronici prodotti in un anno.</p>
+      <p class="m" style="font-size: 0.85rem">Fonti: Apple, settembre 2020 (<a href="https://appleinsider.com/articles/20/09/15/apple-has-sold-a-total-of-500-million-ipads-in-the-last-10-years">AppleInsider</a>); lancio dell'iPad mini (<a href="https://fortune.com/2012/11/05/apples-3-million-ipad-weekend-what-the-analysts-are-saying/">Fortune</a>); <a href="https://unitar.org/index.php/about/news-stories/press/global-e-waste-monitor-2024-electronic-waste-rising-five-times-faster-documented-e-waste-recycling">Global E-waste Monitor 2024</a>. Apple non pubblica le vendite per modello.</p>
+    </div>
+    <figure class="ipad" style="background: none"><img src="img/foto_monitor_fronte.jpg" alt="Foto del prototipo vero: il monitor nel guscio stampato in 3D, cornice grigia, scocca verde acqua e maniglia rossa, schermo acceso" style="border-radius: 14px; margin-bottom: 8px"><div style="display: flex; gap: 8px; margin-bottom: 14px"><img src="img/foto_monitor_lato.jpg" alt="Il prototipo vero visto di lato, con il pulsante di accensione rosso" style="width: 50%; border-radius: 14px; aspect-ratio: 1 / 1; object-fit: cover"><img src="img/foto_guscio_stampa.jpg" alt="La scocca del guscio mentre si stampa sulla stampante 3D" style="width: 50%; border-radius: 14px; aspect-ratio: 1 / 1; object-fit: cover"></div><img src="img/guscio_studio_1_fronte.jpg" alt="Il guscio stampato in 3D con l'iPad acceso: maniglia, tasche laterali per sonde e cavi" style="border-radius: 14px; margin-bottom: 14px"><img src="img/guscio_blueprint_esploso.png" alt="Disegno tecnico dell'esploso del guscio stampato in 3D, con i nomi delle parti" style="border-radius: 14px; aspect-ratio: auto"><figcaption>In alto il prototipo vero, stampato in casa; sotto il render e il disegno tecnico. Con una stampante 3D diventa un monitor trasportabile: <a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/04-guscio.md">il guscio</a>.</figcaption></figure>
+  </div>
+</section>
+
+<section class="band" id="guida">
+  <div class="wrap">
+    <span class="eyebrow">Guida rapida per l'istruttore</span>
+    <h2>Dalla valigia allo scenario in cinque minuti.</h2>
+    <p class="lead">Quello che serve sapere il giorno del corso. I dettagli sono nella <a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/03-uso.md">guida all'uso</a>.</p>
+    <div class="guide">
+      <div class="card"><h3><span>01</span> Prima dei partecipanti</h3>
+        <ol>
+          <li>Accendi i due iPad e apri le app: il controller trova il monitor da solo e si collega. Wi-Fi e Bluetooth® accesi, nessuna rete necessaria.</li>
+          <li>Scegli il layout: <b>ICU</b>, <b>extraH</b> o <b>DAE</b> (tasto <kbd>Layout</kbd> sul controller).</li>
+          <li>Nella vista <kbd>Scenario</kbd> scegli lo scenario, oppure costruiscilo con <kbd>Nuovo scenario</kbd>.</li>
+          <li>Il monitor resta spento: lo accendono i partecipanti, come in reparto.</li>
+        </ol></div>
+      <div class="card"><h3><span>02</span> Prebriefing</h3>
+        <ul>
+          <li>Mostra il monitor: accensione, prese delle sonde, NIBP, allarmi, defibrillatore.</li>
+          <li>Dichiara che cosa è simulato: le sonde le «colleghi» tu quando le vedi posizionate, e il refill si legge toccando il riquadro o chiedendolo a voce.</li>
+          <li>Ricorda che si lavora in un ambiente sicuro: l'errore è materia di apprendimento.</li>
+        </ul></div>
+      <div class="card"><h3><span>03</span> Durante lo scenario</h3>
+        <ul>
+          <li><b>Sonde</b>: interruttore quando vedi applicare elettrodi, saturimetro, bracciale, piastre.</li>
+          <li><b>Parametri</b>: tocca una tessera in alto; <kbd>Subito</kbd> oppure <kbd>30 s</kbd> per un cambiamento graduale.</li>
+          <li><b>Fasi</b>: <kbd>Fase successiva</kbd> quando il gruppo è pronto. Non avanza mai da sola.</li>
+          <li><b>Arresto</b>: <kbd>RCP in corso</kbd> quando iniziano le compressioni, <kbd>Ventila</kbd> a ogni insufflazione: solo allora compaiono capnogramma ed EtCO₂.</li>
+          <li><b>Scariche</b>: le erogano i partecipanti. Con «Decido io» il controller ti chiede l'esito dopo ogni scarica.</li>
+        </ul></div>
+      <div class="card"><h3><span>04</span> Annota mentre osservi</h3>
+        <ul>
+          <li>Vista <kbd>Registro</kbd>: un tocco per arresto riconosciuto, chiamata d'aiuto, farmaci, vie aeree.</li>
+          <li><kbd>Punto di forza…</kbd> e <kbd>Da discutere…</kbd>: due parole, e restano al minuto giusto.</li>
+          <li>Il resto lo annota il monitor da solo: sonde, NIBP, cariche, scariche con l'energia, pacing.</li>
+        </ul></div>
+      <div class="card wide"><h3><span>05</span> Debriefing</h3>
+        <ul>
+          <li>Apri <kbd>Piano di debriefing</kbd>: tempi dall'arresto al riconoscimento, alle compressioni, alla prima scarica, al ROSC; scariche, farmaci, punti segnati.</li>
+          <li>Parti dai <b>punti chiave</b> e lascia che sia il gruppo a ricostruire: «che cosa vi ha fatto capire che era un arresto?».</li>
+          <li>Ogni scenario avviato apre una sessione nuova; le precedenti restano consultabili e scaricabili in testo dalla pagina web.</li>
+        </ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="come">
+  <div class="wrap">
+    <span class="eyebrow">Come si costruisce</span>
+    <h2>Quattro passi, un fine settimana.</h2>
+    <p class="lead">Ti servono un iPad mini di 1ª generazione (due, se vuoi anche la regia su iPad; un iPod touch di 5ª generazione per la regia tascabile) e, una volta sola, un Mac® o un PC Linux® per la prima installazione: poi gli aggiornamenti arrivano senza cavi. Nessun account sviluppatore, nessun abbonamento, nessun internet durante l'uso.</p>
+    <div class="steps">
+      <div class="card"><h3>Sblocca l'iPad</h3><p>Una volta sola, dal browser dell'iPad.</p><a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/01-jailbreak.md">La guida</a></div>
+      <div class="card"><h3>Installa da zero</h3><p>Un comando dal computer per ogni dispositivo, con il cavo. Oppure lo fa <a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/06-claude-code.md">Claude Code</a> per te.</p><a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/02-installazione.md">La guida</a></div>
+      <div class="card"><h3>Porta lo scenario in sala</h3><p>Collegamento, regia, scenari, debriefing.</p><a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/03-uso.md">La guida</a></div>
+      <div class="card"><h3>Stampa il guscio</h3><p>Maniglia, schermo inclinato, tasche per cavi e sonde.</p><a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/04-guscio.md">La guida</a></div>
+    </div>
+    <p class="lead" style="margin-top: 22px">Poi le versioni nuove arrivano dalla regia web sul computer, con un clic, senza cavi: il monitor le passa anche a controller e Pocket. <a href="https://github.com/Franz8787/similfranz-monitor/blob/main/docs/05-aggiornamenti.md">Come si aggiorna</a></p>
+  </div>
+</section>
+
+<section class="band tight">
+  <div class="wrap">
+    <span class="eyebrow">Una famiglia</span>
+    <h2>Vecchi dispositivi Apple che tornano in sala.</h2>
+    <p class="lead">similFranz è nato con un <a href="https://franz8787.github.io/similfranz-saturimetro/">saturimetro su iPod touch 4</a>. È pensato per formatori, istruttori e facilitatori di simulazione, e per chiunque abbia un vecchio dispositivo da rimettere al lavoro.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>similFranz Monitor</b> è un simulatore per la formazione: non è un dispositivo medico e non sostituisce alcuno strumento clinico. Non è affiliato né approvato da alcun produttore di monitor o defibrillatori.</p>
+    <p>Codice e documentazione con licenza GPL-3.0. Sviluppato da Francesco Palmisano (ilFranz) con Claude Code. Figura del paziente nella pagina web: Goran tek-en, Wikimedia Commons, CC BY-SA 4.0. Apple®, iPad®, iPad mini®, iPod touch®, iPhone®, Mac® e gli altri marchi Apple citati sono di Apple Inc., registrati negli Stati Uniti e in altri Paesi; IOS è un marchio di Cisco usato su licenza; GitHub® è di GitHub, Inc.; Wi-Fi® di Wi-Fi Alliance; Bluetooth® di Bluetooth SIG, Inc.; Linux® di Linus Torvalds. Progetto indipendente, non affiliato a questi titolari.</p>
+  </div>
+</footer>
+</body>
+</html>

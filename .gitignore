@@ -1,0 +1,14 @@
+# compilazione
+monitor/build/
+controller/build/
+pocket/build/
+sdk/
+*.o
+# pacchetti: si pubblicano nelle Releases, non nel codice
+monitor/dist/
+controller/dist/
+pocket/dist/
+*.deb
+!docs/aggiornamenti/*.deb
+# macOS
+.DS_Store
