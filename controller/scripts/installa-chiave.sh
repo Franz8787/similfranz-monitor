@@ -3,7 +3,7 @@
 # La password di root la scrivi tu (sul Mac in una finestra, su Linux nel terminale): non resta scritta da nessuna parte.
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PORT="${SIMILFRANZ_PORT:-2226}"; KEY="${SIMILFRANZ_KEY:-$HOME/.ssh/similfranz_ipad}"
-[ -f "$KEY.pub" ] || { echo "Manca la chiave: creala con  ssh-keygen -t rsa -f $KEY -N ''"; exit 1; }
+[ -f "$KEY.pub" ] || { echo "Manca la chiave: creala con  ssh-keygen -t ed25519 -f $KEY -N ''"; exit 1; }
 UDID_OPT=(); [ -n "${SIMILFRANZ_UDID:-}" ] && UDID_OPT=(-u "$SIMILFRANZ_UDID")
 pgrep -f "iproxy $PORT" >/dev/null || { iproxy "$PORT" 22 "${UDID_OPT[@]}" >/dev/null 2>&1 & sleep 1; }
 SSH_OPT=(-p "$PORT" -o PubkeyAuthentication=no -o NumberOfPasswordPrompts=2 -o UserKnownHostsFile="$HOME/.ssh/known_hosts_similfranz"

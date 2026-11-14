@@ -22,7 +22,7 @@ N="$(idevice_id -l 2>/dev/null | grep -c . || true)"
 [ "$N" -gt 0 ] || die "nessun dispositivo collegato: collega il cavo, sblocca lo schermo e, se compare, tocca «Autorizza»"
 [ "$N" -eq 1 ] || [ -n "${SIMILFRANZ_UDID:-}" ] || die "sono collegati $N dispositivi: lascia collegato solo quello da installare (oppure SIMILFRANZ_UDID=<udid>, da idevice_id -l)"
 KEY="${SIMILFRANZ_KEY:-$HOME/.ssh/similfranz_ipad}"
-[ -f "$KEY" ] || { mkdir -p "$HOME/.ssh"; ssh-keygen -q -t rsa -f "$KEY" -N "" && echo "== creata la chiave $KEY"; }
+[ -f "$KEY" ] || { mkdir -p "$HOME/.ssh"; ssh-keygen -q -t ed25519 -f "$KEY" -N "" && echo "== creata la chiave $KEY"; }
 if ! "$HERE/$APP/scripts/ssh.sh" true 2>/dev/null; then
   echo "== prima volta su questo dispositivo: installo la chiave (ti chiedo la password di root, una volta sola)"
   "$HERE/$APP/scripts/installa-chiave.sh" || die "chiave non installata: password giusta? OpenSSH installato da Cydia? (docs/02-installazione.md)"
@@ -36,4 +36,4 @@ echo "== scarico $(basename "$URL")"
 curl -fsSL "$URL" -o "$DEB" || die "download non riuscito"
 touch "$DEB"                                       # install.sh prende il .deb più recente in dist/
 "$HERE/$APP/scripts/install.sh"
-echo "OK: $APP aggiornato a $TAG"
+echo "OK: $APP installato dalla versione pubblicata $TAG"
