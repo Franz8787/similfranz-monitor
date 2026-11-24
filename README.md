@@ -108,7 +108,7 @@ centro si scrive partendo da uno di questi ([come si fa](docs/sviluppo.md#scrive
 
 similFranz nasce in sala di simulazione e ne segue il ciclo:
 
-1. **Prebriefing.** Presenti il dispositivo al gruppo: come si accende, dove si collegano le sonde, che cosa può
+1. **Familiarizzazione.** Presenti il dispositivo al gruppo: come si accende, dove si collegano le sonde, che cosa può
    e che cosa non può fare. Chi conosce lo strumento si sente al sicuro, e chi si sente al sicuro impara.
 2. **Scenario.** I partecipanti agiscono, tu faciliti: dai i segnali clinici, segui le loro decisioni, tieni lo
    scenario allineato agli obiettivi. Il registro lavora da solo.
