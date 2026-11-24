@@ -183,9 +183,9 @@ l'API del monitor e come si scrive un layout nuovo.
 Lui scarica, installa e ti dice quando collegare ogni dispositivo; tu scrivi solo la password e fai i tocchi.
 Funziona anche per il [saturimetro](https://github.com/Franz8787/similfranz-saturimetro), o per tutto insieme.
 
-## Una famiglia che cresce
+## Un ecosistema che cresce
 
-similFranz è un insieme di vecchi dispositivi Apple che tornano utili alla simulazione.
+similFranz è un ecosistema di vecchi dispositivi Apple che tornano utili alla simulazione.
 Il primo è stato il [saturimetro su iPod touch 4](https://github.com/Franz8787/similfranz-saturimetro).
 Metti una stella al progetto: sarai tra i primi a vedere il prossimo.
 
