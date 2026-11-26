@@ -2,6 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24232019.svg)](https://doi.org/10.5281/zenodo.24232019)
 
+Fa parte dell'**ecosistema similFranz**: tutti gli strumenti sulla [pagina similFranz](https://franz8787.github.io/similfranz/).
+
 **Quel vecchio iPad mini® ha ancora molte vite da salvare. Per finta, e proprio per questo sul serio.**
 
 Immagina la tua prossima simulazione: i partecipanti entrano, applicano gli elettrodi, e sul monitor compare
