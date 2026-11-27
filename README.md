@@ -12,6 +12,7 @@ iPad e intanto il registro annota ogni azione, al secondo, per il debriefing.
 
 Tutto questo con due iPad mini di dieci anni fa: uno fa il **monitor-defibrillatore**, l'altro la **regia
 del facilitatore**. Si parlano direttamente, anche dove il Wi-Fi® è un ricordo.
+Nessun abbonamento, nessun account, nessun costo ricorrente.
 
 <p align="center">
   <img src="docs/img/regia_coppia.jpg" width="80%" alt="Il monitor similFranz nel suo guscio e, accanto, il secondo iPad con la regia del facilitatore">
